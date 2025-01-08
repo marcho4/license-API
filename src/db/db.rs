@@ -6,6 +6,7 @@ use crate::models::license::License;
 use crate::models::errors::MyError;
 use chrono::Utc;
 use futures::stream::StreamExt;
+use futures::TryStreamExt;
 
 const SECONDS_IN_DAY: i64 = 24 * 60 * 60;
 
@@ -139,5 +140,10 @@ impl DbRepo {
                 Err(MyError::DatabaseError)
             }
         }
+    }
+    pub async fn get_all_license(&self, community_name: String) -> Result<Vec<License>, MyError> {
+        let licenses = self.col.find(doc! { "api_name": community_name }).await;
+        let ans = licenses.unwrap().try_collect().await.map_err(|_e| MyError::DatabaseError)?;
+        Ok(ans)
     }
 }

@@ -185,3 +185,19 @@ async fn activate(data: web::Data<AppState>, body: web::Json<RenewData>) -> Http
         )
     }
 }
+
+#[get("/{api_name}/all")]
+async fn get_all_comm_licenses(data: web::Data<AppState>, api_name: web::Path<String>) -> HttpResponse {
+    let db = data.db.lock().await;
+    let res = db.get_all_license(api_name.into_inner()).await;
+    match res {
+        Ok(licenses) => HttpResponse::Ok().json(ApiResponse::<Vec<License>> {
+            msg: Some(String::from("success")),
+            data: Some(licenses),
+        }),
+        Err(_e) => HttpResponse::InternalServerError().json(ApiResponse::<String> {
+            msg: Some(String::from("Database error")),
+            data: None
+        })
+    }
+}

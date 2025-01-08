@@ -7,6 +7,8 @@ use crate::api::license_api::*;
 use crate::db::db::DbRepo;
 use tokio::sync::Mutex;
 use env_logger::Env;
+use actix_cors::Cors;
+
 
 
 pub struct AppState {
@@ -29,6 +31,13 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .app_data(state.clone())
             .wrap(middleware::Logger::default())
+            .wrap(
+                Cors::default()
+                .allow_any_method()
+                .allow_any_header()
+                .allowed_origin("http://localhost:3000")
+                .supports_credentials()
+            )
             .service(
 
                 web::scope("/license")
@@ -38,6 +47,7 @@ async fn main() -> std::io::Result<()> {
                     .service(delete_license)
                     .service(activate)
                     .service(get_all_licenses)
+                    .service(get_all_comm_licenses)
             )
     })
         .bind(("0.0.0.0", 8001))?
